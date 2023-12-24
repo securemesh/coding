@@ -2,11 +2,13 @@ package coding
 
 import (
 	"bytes"
+
 	"github.com/icza/bitio"
 	"github.com/samber/lo"
+	"github.com/securemesh/coding/heap"
 )
 
-func Encode(h *Heap, msg []byte) []byte {
+func Encode(h *heap.Heap, msg []byte) []byte {
 	buf := &bytes.Buffer{}
 	w := bitio.NewWriter(buf)
 

@@ -1,5 +1,9 @@
 package coding
 
+import (
+	"github.com/securemesh/coding/heap"
+)
+
 var chatHeap = newHeapFromSeed([][]byte{
 	[]byte(`]\_}`),
 	[]byte(`[ê%=Z`),
@@ -18,12 +22,12 @@ var chatHeap = newHeapFromSeed([][]byte{
 	[]byte(` `),
 })
 
-func ChatHeap() *Heap {
+func ChatHeap() *heap.Heap {
 	return chatHeap.Clone()
 }
 
-func newHeapFromSeed(seed [][]byte) *Heap {
-	h := NewHeap()
+func newHeapFromSeed(seed [][]byte) *heap.Heap {
+	h := heap.NewHeap()
 
 	for i := range seed {
 		for _, s := range seed[i:] {
