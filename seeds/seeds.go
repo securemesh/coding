@@ -1,4 +1,4 @@
-package coding
+package seeds
 
 import (
 	"github.com/securemesh/coding/heap"

@@ -7,11 +7,12 @@ import (
 
 	"github.com/samber/lo"
 	"github.com/securemesh/coding"
+	"github.com/securemesh/coding/seeds"
 )
 
 func TestSimple(t *testing.T) {
 	msg := []byte("this is a test. this is only a test.")
-	encoded := coding.Encode(coding.ChatHeap(), msg)
+	encoded := coding.Encode(seeds.ChatHeap(), msg)
 	t.Logf("orig=%d encoded=%d", len(msg), len(encoded))
 }
 
@@ -26,7 +27,7 @@ func TestSMS(t *testing.T) {
 
 	for s.Scan() {
 		msg := s.Bytes()
-		e := coding.Encode(coding.ChatHeap(), msg)
+		e := coding.Encode(seeds.ChatHeap(), msg)
 		orig += len(msg)
 		encoded += len(e)
 	}
