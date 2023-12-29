@@ -5,6 +5,7 @@ import (
 
 	"github.com/icza/bitio"
 	"github.com/samber/lo"
+	"github.com/securemesh/coding/codes"
 	"github.com/securemesh/coding/heap"
 )
 
@@ -14,8 +15,8 @@ func Encode(h *heap.Heap, msg []byte) []byte {
 
 	for _, b := range msg {
 		index := h.IncrementSymbol(b)
-		code := codes[index]
-		lo.Must0(w.WriteBits(uint64(code.value), uint8(code.bits)))
+		code := codes.CodeForIndex(index)
+		lo.Must0(w.WriteBits(uint64(code.Value), uint8(code.Bits)))
 	}
 
 	lo.Must0(w.Close())
