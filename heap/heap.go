@@ -1,7 +1,11 @@
 package heap
 
 import (
+	"fmt"
 	"maps"
+	"slices"
+	"sort"
+	"strings"
 )
 
 type node struct {
@@ -53,6 +57,30 @@ func (h *Heap) IncrementSymbol(symbol byte) int {
 	}
 
 	return nodeIndex
+}
+
+func (h Heap) String() string {
+	nodes := []node{}
+
+	for _, node := range h.nodes {
+		if node.count == 0 {
+			continue
+		}
+
+		nodes = append(nodes, node)
+	}
+
+	slices.SortStableFunc(nodes, func(a, b node) int { return b.count - a.count })
+
+	strs := []string{}
+
+	for _, node := range nodes {
+		strs = append(strs, fmt.Sprintf("{%#U}=%d", node.symbol, node.count))
+	}
+
+	sort.Strings(strs)
+
+	return strings.Join(strs, ", ")
 }
 
 func (h Heap) parentIndex(nodeIndex int) int {
