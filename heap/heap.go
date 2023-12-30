@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"maps"
 	"slices"
-	"sort"
 	"strings"
 )
 
@@ -77,8 +76,6 @@ func (h Heap) String() string {
 	for _, node := range nodes {
 		strs = append(strs, fmt.Sprintf("{%#U}=%d", node.symbol, node.count))
 	}
-
-	sort.Strings(strs)
 
 	return strings.Join(strs, ", ")
 }

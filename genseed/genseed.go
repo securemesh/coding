@@ -38,17 +38,34 @@ func optimize(h *heap.Heap, samples [][]byte) *heap.Heap {
 	return h
 }
 
+type sampleResult struct {
+	heap *heap.Heap
+	score int
+}
+
 func optimize2(baseHeap *heap.Heap, samples [][]byte) *heap.Heap {
+	ch := make(chan sampleResult, 100)
+
+	for i := 0; i < 256; i++ {
+		i := i
+		go func () {
+			h := baseHeap.Clone()
+			h.IncrementSymbol(byte(i))
+			ch <- sampleResult{
+				heap: h,
+				score: totalLength(h, samples),
+			}
+		}()
+	}
+
 	var best *heap.Heap = nil
 	bestScore := totalLength(baseHeap, samples)
 
 	for i := 0; i < 256; i++ {
-		h := baseHeap.Clone()
-		h.IncrementSymbol(byte(i))
-		score := totalLength(h, samples)
-		if score < bestScore {
-			best = h
-			bestScore = score
+		res := <-ch
+		if res.score < bestScore {
+			best = res.heap
+			bestScore = res.score
 		}
 	}
 
