@@ -18,8 +18,11 @@ func main() {
 		return len(sample)
 	}))
 
-	log.Printf("default=%d", totalLength(heap.NewHeap(), samples))
-	log.Printf("chat=%d", totalLength(seeds.ChatHeap(), samples))
+	def := heap.NewHeap()
+	log.Printf("def=%d [%s]", totalLength(def, samples), def)
+
+	chat := seeds.ChatHeap()
+	log.Printf("chat=%d [%s]", totalLength(chat, samples), chat)
 
 	opt := optimize(heap.NewHeap(), samples)
 	log.Printf("opt=%d [%s]", totalLength(opt, samples), opt)
@@ -47,10 +50,10 @@ func optimize2(baseHeap *heap.Heap, samples [][]byte) *heap.Heap {
 	ch := make(chan sampleResult, 100)
 
 	for i := 0; i < 256; i++ {
-		i := i
+		s := byte(i)
 		go func () {
 			h := baseHeap.Clone()
-			h.IncrementSymbol(byte(i))
+			h.IncrementSymbol(s)
 			ch <- sampleResult{
 				heap: h,
 				score: totalLength(h, samples),

@@ -5,21 +5,21 @@ import (
 )
 
 var chatHeap = newHeapFromSeed([][]byte{
-	[]byte(`]\_}`),
-	[]byte(`[ê%=Z`),
-	[]byte(`#ÄQ<>`),
-	[]byte(`&X@+*`),
-	[]byte(`$~"V;`),
-	[]byte(`/78q9`),
-	[]byte("zRE54F(U-6\n"),
-	[]byte(`NLx:C01D2BJ)K3GP`),
-	[]byte(`STWH!OYAjM`),
-	[]byte(`?,'`),
-	[]byte(`bIv`),
-	[]byte(`mygwc.pfk`),
-	[]byte(`isrhlud`),
-	[]byte(`eotan`),
-	[]byte(` `),
+	/* 01 */ []byte("\x07'(,-8?ACDFHJLMNPRSTUWYbcfgjkpxzê"),
+	/* 02 */ []byte("\n.dvw"),
+	/* 03 */ []byte("Ihlmor"),
+	/* 04 */ []byte("nu"),
+	/* 05 */ []byte("ey"),
+	/* 06 */ []byte("i"),
+	/* 07 */ []byte("s"),
+	/* 08 */ []byte(""),
+	/* 09 */ []byte(""),
+	/* 10 */ []byte(""),
+	/* 11 */ []byte("at"),
+	/* 12 */ []byte(""),
+	/* 13 */ []byte(""),
+	/* 14 */ []byte(""),
+	/* 15 */ []byte(" "),
 })
 
 func ChatHeap() *heap.Heap {

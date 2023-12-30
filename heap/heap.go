@@ -45,7 +45,7 @@ func (h *Heap) IncrementSymbol(symbol byte) int {
 	for iterIndex != 0 {
 		parentIndex := h.parentIndex(iterIndex)
 
-		if h.nodes[iterIndex].count <= h.nodes[parentIndex].count {
+		if h.nodes[iterIndex].count < h.nodes[parentIndex].count || (h.nodes[iterIndex].count == h.nodes[parentIndex].count && h.nodes[iterIndex].symbol > h.nodes[parentIndex].symbol) {
 			break
 		}
 
@@ -69,7 +69,8 @@ func (h Heap) String() string {
 		nodes = append(nodes, node)
 	}
 
-	slices.SortStableFunc(nodes, func(a, b node) int { return b.count - a.count })
+	slices.SortStableFunc(nodes, func(a, b node) int { return int(a.symbol) - int(b.symbol) })
+	slices.SortStableFunc(nodes, func(a, b node) int { return a.count - b.count })
 
 	strs := []string{}
 
