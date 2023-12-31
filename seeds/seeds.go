@@ -5,19 +5,22 @@ import (
 )
 
 var chatState = newStateFromSeed([][]byte{
-	/* 01 */ []byte("',.0:?CIbgjkpvxz\xea"),
-	/* 02 */ []byte("\nfw"),
-	/* 03 */ []byte("cdmuy"),
+	/* 01 */ []byte("',.?CIbcfjkpvxz\xea"),
+	/* 02 */ []byte("dgwy"),
+	/* 03 */ []byte("\nmru"),
 	/* 04 */ []byte("l"),
-	/* 05 */ []byte("r"),
-	/* 06 */ []byte("t"),
-	/* 07 */ []byte("ahos"),
-	/* 08 */ []byte("in"),
+	/* 05 */ []byte("hns"),
+	/* 06 */ []byte("a"),
+	/* 07 */ []byte(""),
+	/* 08 */ []byte("i"),
 	/* 09 */ []byte(""),
-	/* 10 */ []byte(""),
-	/* 11 */ []byte(" "),
+	/* 10 */ []byte(" "),
+	/* 11 */ []byte(""),
 	/* 12 */ []byte(""),
-	/* 13 */ []byte("e"),
+	/* 13 */ []byte(""),
+	/* 14 */ []byte("et"),
+	/* 15 */ []byte(""),
+	/* 16 */ []byte("o"),
 })
 
 func ChatState() *state.State {

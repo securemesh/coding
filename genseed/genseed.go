@@ -24,26 +24,16 @@ func main() {
 	chat := seeds.ChatState()
 	log.Printf("chat=%d [%s]", totalLength(chat, samples), chat)
 
-	chatOpt := optimize(chat, samples)
-	if chatOpt == nil {
-		log.Printf("\toptimal from further additions")
-	} else {
-		log.Printf("\tnot optimal [%s]", chatOpt)
-	}
-
 	opt := optimize(state.NewState(), samples)
 	log.Printf("opt=%d [%s]", totalLength(opt, samples), opt)
 }
 
 func optimize(st *state.State, samples [][]byte) *state.State {
-	var best *state.State
-
 	for true {
 		better := optimize2(st, samples)
 		if better == nil {
-			return best
+			return st
 		}
-		best = better
 		st = better
 		log.Printf("\titer=%d [%s]", totalLength(st, samples), st)
 	}

@@ -8,10 +8,8 @@ type Code struct {
 var codes = [256]Code{
 	{Value: 0b0000, Bits: 4},
 	{Value: 0b0001, Bits: 4},
-	{Value: 0b00100, Bits: 5},
-	{Value: 0b00101, Bits: 5},
-	{Value: 0b00110, Bits: 5},
-	{Value: 0b00111, Bits: 5},
+	{Value: 0b0010, Bits: 4},
+	{Value: 0b0011, Bits: 4},
 	{Value: 0b01000, Bits: 5},
 	{Value: 0b01001, Bits: 5},
 	{Value: 0b01010, Bits: 5},
@@ -262,6 +260,8 @@ var codes = [256]Code{
 	{Value: 0b1111111011, Bits: 10},
 	{Value: 0b1111111100, Bits: 10},
 	{Value: 0b1111111101, Bits: 10},
+	{Value: 0b1111111110, Bits: 10},
+	{Value: 0b1111111111, Bits: 10},
 }
 
 func CodeForIndex(index int) Code {
