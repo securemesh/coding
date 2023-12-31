@@ -12,7 +12,7 @@ type node struct {
 }
 
 type State struct {
-	nodes    []*node
+	nodes    [256]node
 	bySymbol map[byte]int
 }
 
@@ -22,10 +22,7 @@ func NewState() *State {
 	}
 
 	for i := 0; i < 256; i++ {
-		st.nodes = append(st.nodes, &node{
-			symbol: byte(i),
-		})
-
+		st.nodes[i].symbol = byte(i)
 		st.bySymbol[byte(i)] = i
 	}
 
@@ -33,16 +30,10 @@ func NewState() *State {
 }
 
 func (st State) Clone() *State {
-	st2 := &State{
+	return &State{
+		nodes: st.nodes,
 		bySymbol: maps.Clone(st.bySymbol),
 	}
-
-	for _, node := range st.nodes {
-		tmp := *node
-		st2.nodes = append(st2.nodes, &tmp)
-	}
-
-	return st2
 }
 
 // Returns old index
@@ -61,11 +52,8 @@ func (st *State) IncrementSymbol(symbol byte) int {
 			break
 		}
 
-		st.nodes[iterIndex] = prevNode
-		st.bySymbol[prevNode.symbol] = iterIndex
-
-		st.nodes[prevIndex] = iterNode
-		st.bySymbol[iterNode.symbol] = prevIndex
+		st.nodes[iterIndex], st.nodes[prevIndex] = prevNode, iterNode
+		st.bySymbol[iterNode.symbol], st.bySymbol[prevNode.symbol] = prevIndex, iterIndex
 	}
 
 	return nodeIndex

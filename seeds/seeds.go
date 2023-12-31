@@ -15,12 +15,10 @@ var chatState = newStateFromSeed([][]byte{
 	/* 08 */ []byte("i"),
 	/* 09 */ []byte(""),
 	/* 10 */ []byte(" "),
-	/* 11 */ []byte(""),
+	/* 11 */ []byte("e"),
 	/* 12 */ []byte(""),
-	/* 13 */ []byte(""),
-	/* 14 */ []byte("et"),
-	/* 15 */ []byte(""),
-	/* 16 */ []byte("o"),
+	/* 13 */ []byte("t"),
+	/* 14 */ []byte("o"),
 })
 
 func ChatState() *state.State {

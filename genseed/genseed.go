@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"log"
 	"os"
+	"slices"
 
 	"github.com/samber/lo"
 	"github.com/securemesh/coding"
@@ -42,6 +43,7 @@ func optimize(st *state.State, samples [][]byte) *state.State {
 }
 
 type sampleResult struct {
+	symbol byte
 	state *state.State
 	score int
 }
@@ -50,29 +52,33 @@ func optimize2(baseState *state.State, samples [][]byte) *state.State {
 	ch := make(chan sampleResult, 100)
 
 	for i := 0; i < 256; i++ {
-		s := byte(i)
+		res := sampleResult{
+			symbol: byte(i),
+		}
+
 		go func () {
 			st := baseState.Clone()
-			st.IncrementSymbol(s)
-			ch <- sampleResult{
-				state: st,
-				score: totalLength(st, samples),
-			}
+			st.IncrementSymbol(res.symbol)
+			res.state = st
+			res.score = totalLength(st, samples)
+			ch <- res
 		}()
 	}
 
-	var best *state.State = nil
-	bestScore := totalLength(baseState, samples)
+	results := []sampleResult{}
 
 	for i := 0; i < 256; i++ {
-		res := <-ch
-		if res.score < bestScore {
-			best = res.state
-			bestScore = res.score
-		}
+		results = append(results, <-ch)
 	}
 
-	return best
+	slices.SortFunc(results, func(a, b sampleResult) int { return int(a.symbol) - int(b.symbol) })
+	best := slices.MaxFunc(results, func(a, b sampleResult) int { return b.score - a.score })
+
+	if best.score == totalLength(baseState, samples) {
+		return nil
+	}
+
+	return best.state
 }
 
 func totalLength(st *state.State, samples [][]byte) int {
