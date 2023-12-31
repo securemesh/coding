@@ -50,7 +50,7 @@ func (st State) Clone() *State {
 
 // Returns old index
 func (st *State) IncrementSymbol(symbol byte) int {
-	node := st.bySymbol[symbol]
+	node := st.nodeFromSymbol(symbol)
 	node.count++
 	origIndex := node.index
 
@@ -84,4 +84,8 @@ func (st State) String() string {
 	}
 
 	return strings.Join(strs, ", ")
+}
+
+func (st State) nodeFromSymbol(symbol byte) *node {
+	return st.bySymbol[symbol]
 }
