@@ -2,32 +2,33 @@ package state
 
 import (
 	"fmt"
-	"maps"
 	"strings"
 )
 
 type node struct {
 	symbol byte
 	count  int
+	index  int
 }
 
 type State struct {
 	nodes    []*node
-	bySymbol map[byte]int
+	bySymbol map[byte]*node
 }
 
 func NewState() *State {
 	st := &State{
-		bySymbol: map[byte]int{},
+		bySymbol: map[byte]*node{},
 	}
 
 	for i := 0; i < 256; i++ {
 		node := &node{
 			symbol: byte(i),
+			index:  i,
 		}
 
 		st.nodes = append(st.nodes, node)
-		st.bySymbol[node.symbol] = i
+		st.bySymbol[node.symbol] = node
 	}
 
 	return st
@@ -35,12 +36,13 @@ func NewState() *State {
 
 func (st State) Clone() *State {
 	st2 := &State{
-		bySymbol: maps.Clone(st.bySymbol),
+		bySymbol: map[byte]*node{},
 	}
 
 	for _, node := range st.nodes {
 		tmp := *node
 		st2.nodes = append(st2.nodes, &tmp)
+		st2.bySymbol[tmp.symbol] = &tmp
 	}
 
 	return st2
@@ -48,10 +50,11 @@ func (st State) Clone() *State {
 
 // Returns old index
 func (st *State) IncrementSymbol(symbol byte) int {
-	nodeIndex := st.bySymbol[symbol]
-	st.nodes[nodeIndex].count++
+	node := st.bySymbol[symbol]
+	node.count++
+	origIndex := node.index
 
-	for iterIndex := nodeIndex; iterIndex > 0; iterIndex-- {
+	for iterIndex := origIndex; iterIndex > 0; iterIndex-- {
 		prevIndex := iterIndex - 1
 		iterNode := st.nodes[iterIndex]
 		prevNode := st.nodes[prevIndex]
@@ -62,11 +65,11 @@ func (st *State) IncrementSymbol(symbol byte) int {
 			break
 		}
 
-		st.nodes[iterIndex], st.nodes[prevIndex] = prevNode, iterNode
-		st.bySymbol[iterNode.symbol], st.bySymbol[prevNode.symbol] = prevIndex, iterIndex
+		st.nodes[iterNode.index], st.nodes[prevNode.index] = prevNode, iterNode
+		prevNode.index, iterNode.index = iterIndex, prevIndex
 	}
 
-	return nodeIndex
+	return origIndex
 }
 
 func (st State) String() string {
