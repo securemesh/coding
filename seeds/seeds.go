@@ -1,41 +1,39 @@
 package seeds
 
 import (
-	"github.com/securemesh/coding/heap"
+	"github.com/securemesh/coding/state"
 )
 
-var chatHeap = newHeapFromSeed([][]byte{
-	/* 01 */ []byte("\x07'(,-8?ACDFHJLMNPRSTUWYbcfgjkpxzê"),
-	/* 02 */ []byte("\n.dvw"),
-	/* 03 */ []byte("Ihlmor"),
-	/* 04 */ []byte("nu"),
-	/* 05 */ []byte("ey"),
-	/* 06 */ []byte("i"),
-	/* 07 */ []byte("s"),
-	/* 08 */ []byte(""),
+var chatState = newStateFromSeed([][]byte{
+	/* 01 */ []byte("',.0:?CIbgjkpvxz\xea"),
+	/* 02 */ []byte("\nfw"),
+	/* 03 */ []byte("cdmuy"),
+	/* 04 */ []byte("l"),
+	/* 05 */ []byte("r"),
+	/* 06 */ []byte("t"),
+	/* 07 */ []byte("ahos"),
+	/* 08 */ []byte("in"),
 	/* 09 */ []byte(""),
 	/* 10 */ []byte(""),
-	/* 11 */ []byte("at"),
+	/* 11 */ []byte(" "),
 	/* 12 */ []byte(""),
-	/* 13 */ []byte(""),
-	/* 14 */ []byte(""),
-	/* 15 */ []byte(" "),
+	/* 13 */ []byte("e"),
 })
 
-func ChatHeap() *heap.Heap {
-	return chatHeap.Clone()
+func ChatState() *state.State {
+	return chatState.Clone()
 }
 
-func newHeapFromSeed(seed [][]byte) *heap.Heap {
-	h := heap.NewHeap()
+func newStateFromSeed(seed [][]byte) *state.State {
+	st := state.NewState()
 
 	for i := range seed {
 		for _, s := range seed[i:] {
 			for _, b := range s {
-				h.IncrementSymbol(b)
+				st.IncrementSymbol(b)
 			}
 		}
 	}
 
-	return h
+	return st
 }

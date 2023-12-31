@@ -7,7 +7,7 @@ import (
 
 	"github.com/samber/lo"
 	"github.com/securemesh/coding"
-	"github.com/securemesh/coding/heap"
+	"github.com/securemesh/coding/state"
 	"github.com/securemesh/coding/seeds"
 )
 
@@ -18,56 +18,66 @@ func main() {
 		return len(sample)
 	}))
 
-	def := heap.NewHeap()
+	def := state.NewState()
 	log.Printf("def=%d [%s]", totalLength(def, samples), def)
 
-	chat := seeds.ChatHeap()
+	chat := seeds.ChatState()
 	log.Printf("chat=%d [%s]", totalLength(chat, samples), chat)
 
-	opt := optimize(heap.NewHeap(), samples)
+	chatOpt := optimize(chat, samples)
+	if chatOpt == nil {
+		log.Printf("\toptimal from further additions")
+	} else {
+		log.Printf("\tnot optimal [%s]", chatOpt)
+	}
+
+	opt := optimize(state.NewState(), samples)
 	log.Printf("opt=%d [%s]", totalLength(opt, samples), opt)
 }
 
-func optimize(h *heap.Heap, samples [][]byte) *heap.Heap {
+func optimize(st *state.State, samples [][]byte) *state.State {
+	var best *state.State
+
 	for true {
-		better := optimize2(h, samples)
+		better := optimize2(st, samples)
 		if better == nil {
-			return h
+			return best
 		}
-		h = better
-		log.Printf("\titer=%d [%s]", totalLength(h, samples), h)
+		best = better
+		st = better
+		log.Printf("\titer=%d [%s]", totalLength(st, samples), st)
 	}
 
-	return h
+	return st
 }
 
 type sampleResult struct {
-	heap *heap.Heap
+	state *state.State
 	score int
 }
 
-func optimize2(baseHeap *heap.Heap, samples [][]byte) *heap.Heap {
+func optimize2(baseState *state.State, samples [][]byte) *state.State {
 	ch := make(chan sampleResult, 100)
 
 	for i := 0; i < 256; i++ {
 		s := byte(i)
 		go func () {
-			h := baseHeap.Clone()
-			h.IncrementSymbol(s)
+			st := baseState.Clone()
+			st.IncrementSymbol(s)
 			ch <- sampleResult{
-				heap: h,
-				score: totalLength(h, samples),
+				state: st,
+				score: totalLength(st, samples),
 			}
 		}()
 	}
 
-	var best *heap.Heap = nil
-	bestScore := totalLength(baseHeap, samples)
+	var best *state.State = nil
+	bestScore := totalLength(baseState, samples)
 
 	for i := 0; i < 256; i++ {
 		res := <-ch
 		if res.score < bestScore {
-			best = res.heap
+			best = res.state
 			bestScore = res.score
 		}
 	}
@@ -75,9 +85,9 @@ func optimize2(baseHeap *heap.Heap, samples [][]byte) *heap.Heap {
 	return best
 }
 
-func totalLength(heap *heap.Heap, samples [][]byte) int {
+func totalLength(st *state.State, samples [][]byte) int {
 	return lo.SumBy(samples, func(sample []byte) int {
-		return len(coding.Encode(heap.Clone(), sample))
+		return len(coding.Encode(st.Clone(), sample))
 	})
 }
 

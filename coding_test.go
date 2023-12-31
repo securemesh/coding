@@ -12,7 +12,7 @@ import (
 
 func TestSimple(t *testing.T) {
 	msg := []byte("this is a test. this is only a test.")
-	encoded := coding.Encode(seeds.ChatHeap(), msg)
+	encoded := coding.Encode(seeds.ChatState(), msg)
 	t.Logf("orig=%d encoded=%d", len(msg), len(encoded))
 }
 
@@ -27,7 +27,7 @@ func TestSMS(t *testing.T) {
 
 	for s.Scan() {
 		msg := s.Bytes()
-		e := coding.Encode(seeds.ChatHeap(), msg)
+		e := coding.Encode(seeds.ChatState(), msg)
 		orig += len(msg)
 		encoded += len(e)
 	}
