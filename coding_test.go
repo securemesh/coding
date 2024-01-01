@@ -1,7 +1,8 @@
 package coding_test
 
 import (
-	"bufio"
+	"encoding/csv"
+	"io"
 	"os"
 	"testing"
 
@@ -17,16 +18,22 @@ func TestSimple(t *testing.T) {
 }
 
 func TestSMS(t *testing.T) {
-	fh := lo.Must(os.Open("sms.txt"))
+	fh := lo.Must(os.Open("text.csv"))
 	defer fh.Close()
 
-	s := bufio.NewScanner(fh)
+	r := csv.NewReader(fh)
 
 	orig := 0
 	encoded := 0
 
-	for s.Scan() {
-		msg := s.Bytes()
+	for true {
+		row, err := r.Read()
+		if err == io.EOF {
+			break
+		} else if err != nil {
+			t.Fatal(err)
+		}
+		msg := []byte(row[0])
 		e := coding.Encode(seeds.ChatState(), msg)
 		orig += len(msg)
 		encoded += len(e)

@@ -1,8 +1,9 @@
 package main
 
 import (
-	"bufio"
 	"bytes"
+	"encoding/csv"
+	"io"
 	"log"
 	"os"
 	"slices"
@@ -20,16 +21,18 @@ func main() {
 		return len(sample)
 	}))
 
-	dict := buildDictionary(samples, 1024)
-
 	def := state.NewState()
-	log.Printf("def=%d [%s]", totalLength(def, samples), def)
+	log.Printf("def=%d {%s}", totalLength(def, samples), def)
 
 	chat := seeds.ChatState()
-	log.Printf("chat=%d [%s]", totalLength(chat, samples), chat)
+	log.Printf("chat=%d {%s}", totalLength(chat, samples), chat)
 
-	opt := optimize(state.NewState(), samples)
-	log.Printf("opt=%d [%s]", totalLength(opt, samples), opt)
+	words := buildDictionary(samples, 1024)
+	dict := optimizeDict(state.NewState(), samples, words)
+	log.Printf("dict=%d {%#U}", totalLength(dict, samples), dict.Symbols()[256:])
+
+	opt := optimize(dict, samples)
+	log.Printf("opt=%d {%s}", totalLength(opt, samples), opt)
 }
 
 type pair struct {
@@ -43,7 +46,7 @@ func buildDictionary(samples [][]byte, num int) [][]byte {
 	for _, sample := range samples {
 		for i := 0; i < len(sample); i++ {
 			sub := sample[i:]
-			for j := 2; j < min(5, len(sub)); j++ {
+			for j := 2; j < min(9, len(sub)); j++ {
 				sub2 := sub[:j]
 				k := toUint64(sub2)
 
@@ -92,8 +95,69 @@ func (p pair) score() int {
 	return p.count * ((len(p.symbol) * 8) - 11)
 }
 
+type sampleResult struct {
+	symbol []byte
+	state  *state.State
+	score  int
+}
+
+func optimizeDict(st *state.State, samples [][]byte, dict [][]byte) *state.State {
+	log.Printf("optDict:")
+
+	for len(dict) > 0 {
+		better := optimizeDict2(st, samples, dict)
+		if better == nil {
+			return st
+		}
+		st = better.state
+		log.Printf("\titer=%d {%#U}", totalLength(st, samples), better.symbol)
+
+		dict2 := [][]byte{}
+		for _, symbol := range dict {
+			if !bytes.Equal(symbol, better.symbol) {
+				dict2 = append(dict2, symbol)
+			}
+		}
+		dict = dict2
+	}
+
+	return st
+}
+
+func optimizeDict2(baseState *state.State, samples [][]byte, dict [][]byte) *sampleResult {
+	ch := make(chan *sampleResult, 100)
+
+	for _, symbol := range dict {
+		res := &sampleResult{
+			symbol: symbol,
+		}
+
+		go func() {
+			res.state = baseState.Clone()
+			res.state.AddSymbol(res.symbol)
+			res.score = totalLength(res.state, samples)
+			ch <- res
+		}()
+	}
+
+	results := []*sampleResult{}
+
+	for _ = range dict {
+		results = append(results, <-ch)
+	}
+
+	slices.SortFunc(results, func(a, b *sampleResult) int { return bytes.Compare(a.symbol, b.symbol) })
+	best := slices.MaxFunc(results, func(a, b *sampleResult) int { return b.score - a.score })
+
+	if best.score >= totalLength(baseState, samples) {
+		return nil
+	}
+
+	return best
+}
+
 func optimize(st *state.State, samples [][]byte) *state.State {
-	st.AddSymbol([]byte("it "))
+	log.Printf("opt:")
 
 	for true {
 		better := optimize2(st, samples)
@@ -101,46 +165,39 @@ func optimize(st *state.State, samples [][]byte) *state.State {
 			return st
 		}
 		st = better
-		log.Printf("\titer=%d [%s]", totalLength(st, samples), st)
+		log.Printf("\titer=%d {%s}", totalLength(st, samples), st)
 	}
 
 	return st
 }
 
-type sampleResult struct {
-	symbol []byte
-	state  *state.State
-	score  int
-}
-
 func optimize2(baseState *state.State, samples [][]byte) *state.State {
-	ch := make(chan sampleResult, 100)
+	ch := make(chan *sampleResult, 100)
 	symbols := baseState.Symbols()
 
 	for _, symbol := range symbols {
-		res := sampleResult{
+		res := &sampleResult{
 			symbol: symbol,
 		}
 
 		go func() {
-			st := baseState.Clone()
-			st.IncrementSymbol(res.symbol)
-			res.state = st
-			res.score = totalLength(st, samples)
+			res.state = baseState.Clone()
+			res.state.IncrementSymbol(res.symbol)
+			res.score = totalLength(res.state, samples)
 			ch <- res
 		}()
 	}
 
-	results := []sampleResult{}
+	results := []*sampleResult{}
 
 	for _ = range symbols {
 		results = append(results, <-ch)
 	}
 
-	slices.SortFunc(results, func(a, b sampleResult) int { return bytes.Compare(a.symbol, b.symbol) })
-	best := slices.MaxFunc(results, func(a, b sampleResult) int { return b.score - a.score })
+	slices.SortFunc(results, func(a, b *sampleResult) int { return bytes.Compare(a.symbol, b.symbol) })
+	best := slices.MaxFunc(results, func(a, b *sampleResult) int { return b.score - a.score })
 
-	if best.score == totalLength(baseState, samples) {
+	if best.score >= totalLength(baseState, samples) {
 		return nil
 	}
 
@@ -154,18 +211,25 @@ func totalLength(st *state.State, samples [][]byte) int {
 }
 
 func loadSamples() ([][]byte, error) {
-	fh, err := os.Open("sms.txt")
+	fh, err := os.Open("text.csv")
 	if err != nil {
 		return nil, err
 	}
 
 	defer fh.Close()
 
-	s := bufio.NewScanner(fh)
+	r := csv.NewReader(fh)
 	ret := [][]byte{}
 
-	for s.Scan() {
-		ret = append(ret, s.Bytes())
+	for true {
+		row, err := r.Read()
+		if err == io.EOF {
+			break
+		} else if err != nil {
+			return nil, err
+		}
+
+		ret = append(ret, []byte(row[0]))
 	}
 
 	return ret, nil
