@@ -5,7 +5,7 @@ type Code struct {
 	Bits  int
 }
 
-var codes = [256]Code{
+var codes = []Code{
 	{Value: 0b0000, Bits: 4},
 	{Value: 0b0001, Bits: 4},
 	{Value: 0b0010, Bits: 4},
@@ -260,8 +260,10 @@ var codes = [256]Code{
 	{Value: 0b1111111011, Bits: 10},
 	{Value: 0b1111111100, Bits: 10},
 	{Value: 0b1111111101, Bits: 10},
-	{Value: 0b1111111110, Bits: 10},
-	{Value: 0b1111111111, Bits: 10},
+	{Value: 0b11111111100, Bits: 11},
+	{Value: 0b11111111101, Bits: 11},
+	{Value: 0b11111111110, Bits: 11},
+	{Value: 0b11111111111, Bits: 11},
 }
 
 func CodeForIndex(index int) Code {

@@ -2,14 +2,15 @@ package main
 
 import (
 	"bufio"
+	"bytes"
 	"log"
 	"os"
 	"slices"
 
 	"github.com/samber/lo"
 	"github.com/securemesh/coding"
-	"github.com/securemesh/coding/state"
 	"github.com/securemesh/coding/seeds"
+	"github.com/securemesh/coding/state"
 )
 
 func main() {
@@ -30,6 +31,8 @@ func main() {
 }
 
 func optimize(st *state.State, samples [][]byte) *state.State {
+	st.AddSymbol([]byte("it "))
+
 	for true {
 		better := optimize2(st, samples)
 		if better == nil {
@@ -43,20 +46,21 @@ func optimize(st *state.State, samples [][]byte) *state.State {
 }
 
 type sampleResult struct {
-	symbol byte
-	state *state.State
-	score int
+	symbol []byte
+	state  *state.State
+	score  int
 }
 
 func optimize2(baseState *state.State, samples [][]byte) *state.State {
 	ch := make(chan sampleResult, 100)
+	symbols := baseState.Symbols()
 
-	for i := 0; i < 256; i++ {
+	for _, symbol := range symbols {
 		res := sampleResult{
-			symbol: byte(i),
+			symbol: symbol,
 		}
 
-		go func () {
+		go func() {
 			st := baseState.Clone()
 			st.IncrementSymbol(res.symbol)
 			res.state = st
@@ -67,11 +71,11 @@ func optimize2(baseState *state.State, samples [][]byte) *state.State {
 
 	results := []sampleResult{}
 
-	for i := 0; i < 256; i++ {
+	for _ = range symbols {
 		results = append(results, <-ch)
 	}
 
-	slices.SortFunc(results, func(a, b sampleResult) int { return int(a.symbol) - int(b.symbol) })
+	slices.SortFunc(results, func(a, b sampleResult) int { return bytes.Compare(a.symbol, b.symbol) })
 	best := slices.MaxFunc(results, func(a, b sampleResult) int { return b.score - a.score })
 
 	if best.score == totalLength(baseState, samples) {

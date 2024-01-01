@@ -31,7 +31,7 @@ func newStateFromSeed(seed [][]byte) *state.State {
 	for i := range seed {
 		for _, s := range seed[i:] {
 			for _, b := range s {
-				st.IncrementSymbol(b)
+				st.IncrementSymbol([]byte{b})
 			}
 		}
 	}

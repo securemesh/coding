@@ -13,8 +13,9 @@ func Encode(st *state.State, msg []byte) []byte {
 	buf := &bytes.Buffer{}
 	w := bitio.NewWriter(buf)
 
-	for _, b := range msg {
-		index := st.IncrementSymbol(b)
+	for i := 0; i < len(msg); {
+		l, index := st.IncrementSymbol(msg[i:])
+		i += l
 		code := codes.CodeForIndex(index)
 		lo.Must0(w.WriteBits(uint64(code.Value), uint8(code.Bits)))
 	}
