@@ -16,7 +16,7 @@ func Encode(st *state.State, msg []byte) []byte {
 	for i := 0; i < len(msg); {
 		l, index := st.IncrementSymbol(msg[i:])
 		i += l
-		code := codes.CodeForIndex(index)
+		code := codes.CodeForIndex(uint32(index))
 		lo.Must0(w.WriteBits(uint64(code.Value), uint8(code.Bits)))
 	}
 

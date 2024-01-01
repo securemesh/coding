@@ -20,6 +20,8 @@ func main() {
 		return len(sample)
 	}))
 
+	dict := buildDictionary(samples, 1024)
+
 	def := state.NewState()
 	log.Printf("def=%d [%s]", totalLength(def, samples), def)
 
@@ -28,6 +30,66 @@ func main() {
 
 	opt := optimize(state.NewState(), samples)
 	log.Printf("opt=%d [%s]", totalLength(opt, samples), opt)
+}
+
+type pair struct {
+	symbol []byte
+	count  int
+}
+
+func buildDictionary(samples [][]byte, num int) [][]byte {
+	counts := map[uint64]*pair{}
+
+	for _, sample := range samples {
+		for i := 0; i < len(sample); i++ {
+			sub := sample[i:]
+			for j := 2; j < min(5, len(sub)); j++ {
+				sub2 := sub[:j]
+				k := toUint64(sub2)
+
+				p := counts[k]
+				if p == nil {
+					counts[k] = &pair{
+						symbol: sub2,
+						count:  1,
+					}
+				} else {
+					p.count++
+				}
+			}
+		}
+	}
+
+	pairs := []*pair{}
+
+	for _, p := range counts {
+		pairs = append(pairs, p)
+	}
+
+	slices.SortFunc(pairs, func(a, b *pair) int { return bytes.Compare(a.symbol, b.symbol) })
+	slices.SortStableFunc(pairs, func(a, b *pair) int { return b.score() - a.score() })
+
+	ret := [][]byte{}
+
+	for i := 0; i < num && i < len(pairs); i++ {
+		ret = append(ret, pairs[i].symbol)
+	}
+
+	return ret
+}
+
+func toUint64(bs []byte) uint64 {
+	var ret uint64
+
+	for _, b := range bs {
+		ret = (ret << 8) | uint64(b)
+	}
+
+	return ret
+}
+
+func (p pair) score() int {
+	return p.count * ((len(p.symbol) * 8) - 11)
 }
 
 func optimize(st *state.State, samples [][]byte) *state.State {
